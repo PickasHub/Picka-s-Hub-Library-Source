@@ -1,0 +1,149 @@
+local FuncsV3 = {}
+
+local SaveConfig = {}
+
+local function Checker(Value, ExpectedType, Fallback)
+    if typeof(Value) == ExpectedType then
+        return Value
+    end
+
+    return Fallback
+end
+
+function FuncsV3:SetTable(Path)
+    SaveConfig = Checker(Path, "table", {})
+end
+
+function FuncsV3:Toggle(Tab, Name, Content, Default, Callback)
+    Name = Checker(Name, "string", tostring(Name))
+    Content = Checker(Content, "string", tostring(Content))
+    Callback = Checker(Callback, "function", function() end)
+
+    local DefaultValue
+
+    if Default == "Save" then
+        DefaultValue = Checker(
+            SaveConfig[Name],
+            "boolean",
+            false
+        )
+    else
+        DefaultValue = Checker(
+            Default,
+            "boolean",
+            false
+        )
+    end
+
+    return Tab:AddToggle({
+        Name = Name,
+        Content = Content,
+        Default = DefaultValue,
+        Callback = Callback
+    })
+end
+
+function FuncsV3:Button(Tab, Name, Content, Callback)
+    Name = Checker(Name, "string", tostring(Name))
+    Content = Checker(Content, "string", tostring(Content))
+    Callback = Checker(Callback, "function", function() end)
+
+    return Tab:AddButton({
+        Name = Name,
+        Content = Content,
+        Icon = "rbxassetid://133672841484499",
+        Callback = Callback
+    })
+end
+
+function FuncsV3:Dropdown(
+    Tab,
+    Name,
+    Content,
+    Multi,
+    Options,
+    Default,
+    Callback
+)
+    Name = Checker(Name, "string", tostring(Name))
+    Content = Checker(Content, "string", tostring(Content))
+    Multi = Checker(Multi, "boolean", false)
+    Options = Checker(Options, "table", {})
+    Callback = Checker(Callback, "function", function() end)
+
+    local DefaultValue
+
+    if Default == "Save" then
+        local Saved = SaveConfig[Name]
+
+        if Multi then
+            if type(Saved) == "table" then
+                DefaultValue = Saved
+            elseif Saved ~= nil then
+                DefaultValue = {Saved}
+            else
+                DefaultValue = {}
+            end
+        else
+            DefaultValue = Saved
+        end
+    else
+        if Multi then
+            if type(Default) == "table" then
+                DefaultValue = Default
+            elseif Default ~= nil then
+                DefaultValue = {Default}
+            else
+                DefaultValue = {}
+            end
+        else
+            DefaultValue = Default
+        end
+    end
+
+    return Tab:AddDropdown({
+        Name = Name,
+        Content = Content,
+        Multi = Multi,
+        Options = Options,
+        Default = DefaultValue,
+        Callback = Callback
+    })
+end
+
+function FuncsV3:Textbox(
+    Tab,
+    Name,
+    Content,
+    Default,
+    Callback
+)
+    Name = Checker(Name, "string", tostring(Name))
+    Content = Checker(Content, "string", tostring(Content))
+    Callback = Checker(Callback, "function", function() end)
+
+    local DefaultValue
+
+    if Default == "Save" then
+        DefaultValue = Checker(
+            SaveConfig[Name],
+            "string",
+            ""
+        )
+    else
+        DefaultValue = Checker(
+            Default,
+            "string",
+            ""
+        )
+    end
+
+    return Tab:AddInput({
+        Name = Name,
+        Content = Content,
+        Default = DefaultValue,
+        Callback = Callback
+    })
+end
+
+return FuncsV3
