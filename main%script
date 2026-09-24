@@ -1,0 +1,54 @@
+loadstring(game:HttpGet("https://raw.githubusercontent.com/PickasHub/Picka-s-Hub-Library-Source/refs/heads/main/Settings"))()
+
+local FuncsV3 = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/PickasHub/Picka-s-Hub-Library-Source/refs/heads/main/Configure"
+))()
+
+local Library = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/PickasHub/Picka-s-Hub-Library-Source/refs/heads/main/Main%20Library"
+))():CreateWindow({
+    ["Tab Width"] = 160,
+    ["Description"] = "join discord : discord.gg/2afkhtaZKH",
+    ["Title"] = "Picka's Hub"
+})
+
+-- Main Tab
+local MainTab = Library:CreateTab({
+    ["Name"] = "Home",
+    ["Icon"] = "rbxassetid://10723407389"
+})
+
+-- Home Section
+local FarmingSection = MainTab:AddSection("Home", true)
+
+-- Toggle
+FuncsV3:Toggle(
+    FarmingSection,
+    "Toggle",
+    "",
+    true,
+    function(value)
+        print("Toggle:", value)
+    end
+)
+
+-- Button
+FuncsV3:Button(
+    FarmingSection,
+    "Button",
+    "",
+    function()
+        print("Button clicked")
+    end
+)
+
+-- Textbox
+FuncsV3:Textbox(
+    FarmingSection,
+    "Set Speed",
+    "Enter walk speed value",
+    "",
+    function(value)
+        print("Speed:", value)
+    end
+)
