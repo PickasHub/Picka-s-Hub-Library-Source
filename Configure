@@ -10,14 +10,28 @@ local function Checker(Value, ExpectedType, Fallback)
     return Fallback
 end
 
+
+--// CONFIG TABLE
 function FuncsV3:SetTable(Path)
     SaveConfig = Checker(Path, "table", {})
 end
 
-function FuncsV3:Toggle(Tab, Name, Content, Default, Callback)
+
+--// TOGGLE
+function FuncsV3:Toggle(
+    Tab,
+    Name,
+    Content,
+    Default,
+    Callback
+)
     Name = Checker(Name, "string", tostring(Name))
     Content = Checker(Content, "string", tostring(Content))
-    Callback = Checker(Callback, "function", function() end)
+    Callback = Checker(
+        Callback,
+        "function",
+        function() end
+    )
 
     local DefaultValue
 
@@ -43,10 +57,21 @@ function FuncsV3:Toggle(Tab, Name, Content, Default, Callback)
     })
 end
 
-function FuncsV3:Button(Tab, Name, Content, Callback)
+
+--// BUTTON
+function FuncsV3:Button(
+    Tab,
+    Name,
+    Content,
+    Callback
+)
     Name = Checker(Name, "string", tostring(Name))
     Content = Checker(Content, "string", tostring(Content))
-    Callback = Checker(Callback, "function", function() end)
+    Callback = Checker(
+        Callback,
+        "function",
+        function() end
+    )
 
     return Tab:AddButton({
         Name = Name,
@@ -56,6 +81,8 @@ function FuncsV3:Button(Tab, Name, Content, Callback)
     })
 end
 
+
+--// DROPDOWN
 function FuncsV3:Dropdown(
     Tab,
     Name,
@@ -69,7 +96,11 @@ function FuncsV3:Dropdown(
     Content = Checker(Content, "string", tostring(Content))
     Multi = Checker(Multi, "boolean", false)
     Options = Checker(Options, "table", {})
-    Callback = Checker(Callback, "function", function() end)
+    Callback = Checker(
+        Callback,
+        "function",
+        function() end
+    )
 
     local DefaultValue
 
@@ -111,6 +142,8 @@ function FuncsV3:Dropdown(
     })
 end
 
+
+--// TEXTBOX
 function FuncsV3:Textbox(
     Tab,
     Name,
@@ -120,7 +153,11 @@ function FuncsV3:Textbox(
 )
     Name = Checker(Name, "string", tostring(Name))
     Content = Checker(Content, "string", tostring(Content))
-    Callback = Checker(Callback, "function", function() end)
+    Callback = Checker(
+        Callback,
+        "function",
+        function() end
+    )
 
     local DefaultValue
 
@@ -145,5 +182,90 @@ function FuncsV3:Textbox(
         Callback = Callback
     })
 end
+
+
+--// SLIDER
+function FuncsV3:Slider(
+    Tab,
+    Name,
+    Content,
+    Min,
+    Max,
+    Default,
+    Callback
+)
+    Name = Checker(
+        Name,
+        "string",
+        tostring(Name)
+    )
+
+    Content = Checker(
+        Content,
+        "string",
+        tostring(Content)
+    )
+
+    Min = Checker(
+        Min,
+        "number",
+        0
+    )
+
+    Max = Checker(
+        Max,
+        "number",
+        100
+    )
+
+    Default = Checker(
+        Default,
+        "number",
+        Min
+    )
+
+    Callback = Checker(
+        Callback,
+        "function",
+        function() end
+    )
+
+    -- Fix reversed range
+    if Max < Min then
+        Min, Max = Max, Min
+    end
+
+    -- Clamp default
+    Default = math.clamp(
+        Default,
+        Min,
+        Max
+    )
+
+    -- Load saved value
+    if SaveConfig[Name] ~= nil then
+        local Saved = tonumber(
+            SaveConfig[Name]
+        )
+
+        if Saved then
+            Default = math.clamp(
+                Saved,
+                Min,
+                Max
+            )
+        end
+    end
+
+    return Tab:AddSlider({
+        Name = Name,
+        Content = Content,
+        Min = Min,
+        Max = Max,
+        Default = Default,
+        Callback = Callback
+    })
+end
+
 
 return FuncsV3
