@@ -1,0 +1,185 @@
+-- ConfigServer
+
+local DataStoreService = game:GetService("DataStoreService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+
+local ConfigStore = DataStoreService:GetDataStore("PICKAS_HUB_CONFIGS_V1")
+
+local Folder = ReplicatedStorage:FindFirstChild("PickasHubConfig")
+if not Folder then
+	Folder = Instance.new("Folder")
+	Folder.Name = "PickasHubConfig"
+	Folder.Parent = ReplicatedStorage
+end
+
+local Remote = Folder:FindFirstChild("ConfigRemote")
+if not Remote then
+	Remote = Instance.new("RemoteFunction")
+	Remote.Name = "ConfigRemote"
+	Remote.Parent = Folder
+end
+
+local function cleanName(name)
+	if typeof(name) ~= "string" then
+		return nil
+	end
+
+	name = name:gsub("^%s+", ""):gsub("%s+$", "")
+
+	if name == "" then
+		return nil
+	end
+
+	if #name > 40 then
+		name = name:sub(1, 40)
+	end
+
+	return name
+end
+
+local function getPlayerData(player)
+	local success, data = pcall(function()
+		return ConfigStore:GetAsync("Player_" .. player.UserId)
+	end)
+
+	if success and typeof(data) == "table" then
+		return data
+	end
+
+	return {}
+end
+
+local function savePlayerData(player, data)
+	return pcall(function()
+		ConfigStore:SetAsync("Player_" .. player.UserId, data)
+	end)
+end
+
+Remote.OnServerInvoke = function(player, action, configName, configData)
+	if action == "List" then
+		local configs = getPlayerData(player)
+		local names = {}
+
+		for name in pairs(configs) do
+			table.insert(names, name)
+		end
+
+		table.sort(names)
+
+		return {
+			Success = true,
+			Configs = names
+		}
+	end
+
+	if action == "Save" then
+		local name = cleanName(configName)
+
+		if not name then
+			return {
+				Success = false,
+				Message = "Enter a configure name."
+			}
+		end
+
+		if typeof(configData) ~= "table" then
+			return {
+				Success = false,
+				Message = "Invalid configuration."
+			}
+		end
+
+		local configs = getPlayerData(player)
+
+		configs[name] = configData
+
+		local success = savePlayerData(player, configs)
+
+		if success then
+			return {
+				Success = true,
+				Message = "Configuration saved.",
+				Name = name
+			}
+		end
+
+		return {
+			Success = false,
+			Message = "Failed to save configuration."
+		}
+	end
+
+	if action == "Load" then
+		local name = cleanName(configName)
+
+		if not name then
+			return {
+				Success = false,
+				Message = "Select a configuration."
+			}
+		end
+
+		local configs = getPlayerData(player)
+		local config = configs[name]
+
+		if typeof(config) ~= "table" then
+			return {
+				Success = false,
+				Message = "Configuration not found."
+			}
+		end
+
+		return {
+			Success = true,
+			Message = "Configuration loaded.",
+			Name = name,
+			Config = config
+		}
+	end
+
+	if action == "Delete" then
+		local name = cleanName(configName)
+
+		if not name then
+			return {
+				Success = false,
+				Message = "Select a configuration."
+			}
+		end
+
+		local configs = getPlayerData(player)
+
+		if configs[name] == nil then
+			return {
+				Success = false,
+				Message = "Configuration not found."
+			}
+		end
+
+		configs[name] = nil
+
+		local success = savePlayerData(player, configs)
+
+		if success then
+			return {
+				Success = true,
+				Message = "Configuration deleted.",
+				Name = name
+			}
+		end
+
+		return {
+			Success = false,
+			Message = "Failed to delete configuration."
+		}
+	end
+
+	return {
+		Success = false,
+		Message = "Unknown action."
+	}
+end
+
+Players.PlayerRemoving:Connect(function(player)
+end)
